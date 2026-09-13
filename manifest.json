@@ -1,7 +1,7 @@
 {
   "name": "Workout Log PWA",
   "short_name": "WL_PWA",
-  "start_url": "login.html",
+  "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#ff5722",
