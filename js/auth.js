@@ -5,7 +5,7 @@ function tryLogin() {
         // ホーム画面（home.html）へジャンプする
         location.href = 'home.html';
     } else {
-        alert('パスワードが違います（テスト用は 1234 です）');
+        alert('パスワードが違います');
     }
 }
 
