@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Workout Log PWA</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org' viewBox='0 0 512 512' width='512' height='512'><rect width='512' height='512' rx='100' fill='%23ff5722'/><circle cx='256' cy='256' r='120' fill='%23ffffff'/><rect x='206' y='206' width='100' height='100' fill='%23ff5722'/></svg>">
+    
+    <link href="css/lib/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/home.css">
+
+    <!-- ライブラリ参照 -->
+    <script src="js/lib/dexie.min.js"></script>
+    <script src="js/lib/chart.umd.min.js"></script>    
+</head>
+</head>
+<body>
+
+    <div class="container-sm py-4">
+        
+        <!-- ヘッダー -->
+        <div class="d-flex align-items-center mb-4">
+            <div class="header-icon bg-danger text-white rounded-3 p-2 me-3 d-flex align-items-center justify-content-center">
+                🏋️
+            </div>
+            <h1 class="h3 mb-0 fw-bold">Workout Log</h1>
+        </div>
+        
+        <!-- 1. 入力フォームカード -->
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">トレーニング日</label>
+                <input type="date" id="date-input" class="form-control form-control-lg rounded-3">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label small fw-bold text-muted">種目</label>
+                <select id="exercise-select" class="form-select form-select-lg rounded-3">
+                    <option value="Bench Press">ベンチプレス</option>
+                    <option value="Squat">スクワット</option>
+                    <option value="Deadlift">デッドリフト</option>
+                </select>
+            </div>
+
+            <!-- 重量と回数の入力エリア -->
+            <div class="row g-2 mb-3">
+                <!-- 重量の入力 ＋ クイック増減ボタン -->
+                <div class="col-6">
+                    <label class="form-label small fw-bold text-muted">重量</label>
+                    <div class="input-group input-group-lg mb-2">
+                        <input type="number" id="weight-input" class="form-control rounded-3" placeholder="0" inputmode="decimal">
+                        <span class="input-group-text bg-light text-muted font-monospace small">kg</span>
+                    </div>
+                    <!-- 🟢 重量用の補助ボタン（親指でタップしやすい間隔） -->
+                    <div class="d-flex flex-wrap gap-1">
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('weight', -10)">-10</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('weight', -5)">-5</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('weight', -2.5)">-2.5</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('weight', 2.5)">+2.5</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('weight', 5)">+5</button>
+                    </div>
+                </div>
+
+                <!-- 回数の入力 ＋ クイック増減ボタン -->
+                <div class="col-6">
+                    <label class="form-label small fw-bold text-muted">回数</label>
+                    <div class="input-group input-group-lg mb-2">
+                        <input type="number" id="reps-input" class="form-control rounded-3" placeholder="0" inputmode="numeric">
+                        <span class="input-group-text bg-light text-muted font-monospace small">Reps</span>
+                    </div>
+                    <!-- 🟢 回数用の補助ボタン -->
+                    <div class="d-flex flex-wrap gap-1">
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('reps', -2)">-2</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('reps', -1)">-1</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('reps', 1)">+1</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('reps', 2)">+2</button>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-danger btn-lg w-100 fw-bold rounded-3 shadow-sm" onclick="addRecord()">記録を保存</button>
+        </div>
+
+        <!-- 2. 期間切り替えタブ -->
+        <ul class="nav nav-pills nav-fill bg-white p-1 rounded-3 shadow-sm mb-2" id="periodTab">
+            <li class="nav-item">
+                <button class="nav-link active fw-bold py-2" id="btn-day" onclick="changePeriod('day')" type="button">日別</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold py-2" id="btn-month" onclick="changePeriod('month')" type="button">月別</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold py-2" id="btn-year" onclick="changePeriod('year')" type="button">年別</button>
+            </li>
+        </ul>
+
+        <!-- 特定の年を選択するエリア（月別のみ） -->
+        <div id="year-filter-container" class="mb-2" style="display: none;">
+            <select id="year-select" class="form-select form-select-sm rounded-3 fw-bold text-muted" onchange="updateChart()">
+            </select>
+        </div>
+
+        <!-- グラフタイプ切り替えタブ -->
+        <ul class="nav nav-pills nav-fill bg-light p-1 rounded-3 mb-3 border" id="chartTypeTab" style="font-size: 14px;">
+            <li class="nav-item">
+                <button class="nav-link active fw-bold py-1 text-secondary" id="btn-type-line" onclick="changeChartType('line')" type="button">📈 折れ線 (最高回数)</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold py-1 text-secondary" id="btn-type-bar" onclick="changeChartType('bar')" type="button">📊 棒グラフ (総負荷量)</button>
+            </li>
+        </ul>
+
+        <!-- グラフエリア -->
+        <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
+            <canvas id="weightChart"></canvas>
+        </div>
+
+        <!-- 3. トレーニング履歴エリア -->
+        <div class="mb-4">
+            <h5 class="fw-bold mb-3 text-dark">History Log</h5>
+            <div id="history-container" class="d-flex flex-column gap-2"></div>
+        </div>
+        
+        <!-- 4. データ管理エリア -->
+        <div class="card border-0 shadow-sm rounded-4 p-3 bg-dark text-white mb-4">
+            <h5 class="fw-bold mb-2 text-warning">Data Management</h5>
+            <p class="small text-white-50 mb-3">機種変更時のデータ移行やクラウドへのバックアップはここから行えます。</p>
+            
+            <div class="d-grid gap-2">
+                <button class="btn btn-outline-light fw-bold" onclick="exportData()">データを書き出す (JSON)</button>
+                <label class="btn btn-outline-warning fw-bold mb-0">
+                    データを読み込む (JSON)
+                    <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="display:none;">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- 自作プログラムの読み込み -->
+    <script src="js/chart.js"></script>
+</body>
+</html>

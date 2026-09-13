@@ -1,0 +1,30 @@
+/* 📄 css/home.css */
+
+body {
+    background-color: #f8f9fa;
+    /* スマホ特有の「引っ張ってリロード」される不快なバウンス動きを防止 */
+    overscroll-behavior-y: contain;
+}
+
+/* スマホ用コンテナの最大幅調整 */
+.container-sm {
+    max-width: 450px;
+}
+
+/* ヘッダーアイコンのサイズ固定 */
+.header-icon {
+    width: 45px;
+    height: 45px;
+}
+
+/* 履歴リストの文字がスマホ画面からはみ出さないための調整 */
+.history-list-item {
+    font-size: 15px;
+}
+
+/* 履歴内の一発削除×ボタンのサイズ・配置調整 */
+.btn-delete-item {
+    width: 30px;
+    height: 30px;
+    line-height: 1;
+}
