@@ -3,7 +3,7 @@
 const CACHE_NAME = 'workout-log-cache-v3';
 
 const urlsToCache = [
-    'login.html',
+    'index.html',
     'home.html',
     'manifest.json',
     'css/lib/bootstrap.min.css',
