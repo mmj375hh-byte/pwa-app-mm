@@ -7,7 +7,7 @@
   "theme_color": "#ff5722",
   "icons": [
     {
-      "src": "data:image/svg+xml;utf8,<svg xmlns='http://w3.org' viewBox='0 0 512 512' width='512' height='512'><rect width='512' height='512' rx='100' fill='%23ff5722'/><circle cx='256' cy='256' r='120' fill='%23ffffff'/><rect x='206' y='206' width='100' height='100' fill='%23ff5722'/></svg>",
+      "src": "data:image/svg+xml;utf8,<svg_xmlns='http://www.w3.org/2000/svg'_viewBox='0_0_512_512'_width='512'_height='512'><rect_width='512'_height='512'_rx='100'_fill='%23ff5722'/><circle_cx='256'_cy='256'_r='120'_fill='%23ffffff'/><rect_x='206'_y='206'_width='100'_height='100'_fill='%23ff5722'/></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any"

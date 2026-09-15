@@ -51,6 +51,7 @@ function openChartModal() {
 // ❌ グラフ用モーダルを閉じる
 function closeChartModal() {
     if (chartModalInstance) chartModalInstance.hide();
+    document.querySelector('button[onclick="openChartModal()"]').focus();
 }
 
 // 🟢 新設：全履歴モーダルを開く
@@ -73,6 +74,7 @@ async function openHistoryModal() {
 // 🟢 新設：全履歴モーダルを閉じる
 function closeHistoryModal() {
     if (historyModalInstance) historyModalInstance.hide();
+    document.querySelector('button[onclick="openHistoryModal()"]').focus();
 }
 
 // ==========================================
