@@ -10,6 +10,8 @@ const urlsToCache = [
     'css/home.css',
     'js/lib/dexie.min.js',
     'js/lib/chart.umd.min.js',
+    'js/lib/bootstrap.min.js',
+    'js/auth.js',
     'js/chart.js'
 ];
 
