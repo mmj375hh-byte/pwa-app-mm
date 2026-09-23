@@ -155,7 +155,7 @@ delayId = setTimeout(() => {
     timerId = setInterval(() => {
     adjustValue(type, amount);
     }, 100); // 0.1秒（100ms）間隔で等速連打（速度はお好みで調整してください）
-}, 300);
+}, 400);
 }
 
 // 「＋」「ー」ボタン長押し（ホールド）停止
