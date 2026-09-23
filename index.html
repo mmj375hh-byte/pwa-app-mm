@@ -16,10 +16,11 @@
     <script src="js/lib/bootstrap.min.js"></script>
 </head>
 <body>
+
     <!-- メインコンテナ（スマホ幅に最適化） -->
     <div class="container-sm py-4">
         
-        <!-- ヘッダーエリア（右端にメニューを開く三本線ボタンを配置） -->
+        <!-- ヘッダーエリア（右端にメニューボタンを配置） -->
         <div class="d-flex align-items-center justify-content-between mb-4">
             <div class="d-flex align-items-center">
                 <div class="header-icon bg-danger text-white rounded-3 p-2 me-3 d-flex align-items-center justify-content-center">
@@ -27,13 +28,12 @@
                 </div>
                 <h1 class="h3 mb-0 fw-bold">Workout Log</h1>
             </div>
-            <!-- ☰ ハンバーガーメニューを開くボタン（横からヌルッと出ます） -->
-            <button class="btn btn-light border shadow-sm rounded-3 py-2 px-3 text-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuOffcanvas" aria-controls="menuOffcanvas">
+            <button class="btn btn-light border shadow-sm rounded-3 py-2 px-3 text-secondary" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuOffcanvas">
                 ☰
             </button>
         </div>
         
-        <!-- 1. 入力フォームエリア -->
+        <!-- 1. 入力フォームカード（重量・自力・補助の3列構成） -->
         <div class="card border-0 shadow-sm rounded-4 p-3 mb-4">
             <div class="mb-3">
                 <label class="form-label small fw-bold text-muted">トレーニング日</label>
@@ -44,41 +44,49 @@
                 <label class="form-label small fw-bold text-muted">種目</label>
                 <select id="exercise-select" class="form-select form-select-lg rounded-3">
                     <option value="Bench Press">ベンチプレス</option>
-                    <option value="Squat">スクワット</option>
-                    <option value="Deadlift">デッドリフト</option>
+                    <option value="Dumbbell Press">ダンベルプレス</option>
                 </select>
             </div>
 
-            <!-- 重量と回数の入力 ＋ クイック増減ボタン -->
+            <!-- スマホの片手操作がしやすいよう、横並び3列のレイアウトに最適化 -->
             <div class="row g-2 mb-3">
-                <!-- 重量（kg）の増減 -->
+                <!-- 重量（kg） -->
                 <div class="col-6">
                     <label class="form-label small fw-bold text-muted">重量</label>
-                    <div class="input-group input-group-lg mb-2">
-                        <input type="number" id="weight-input" class="form-control rounded-3" placeholder="0" inputmode="decimal">
-                        <span class="input-group-text bg-light text-muted font-monospace small">kg</span>
+                    <div class="input-group input-group-md mb-2">
+                        <input type="number" id="weight-input" class="form-control rounded-3 fw-bold" placeholder="0" inputmode="decimal">
                     </div>
                     <div class="d-flex flex-wrap gap-1">
-                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('weight', -10)">-10</button>
-                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('weight', -5)">-5</button>
-                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('weight', -2.5)">-2.5</button>
-                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('weight', 2.5)">+2.5</button>
-                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('weight', 5)">+5</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold hold-btn" data-type="weight" data-amount="10">+10</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold hold-btn" data-type="weight" data-amount="5">+5</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold hold-btn" data-type="weight" data-amount="2.5">+2.5</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold hold-btn" data-type="weight" data-amount="-10">-10</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold hold-btn" data-type="weight" data-amount="-5">-5</button>
+                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold hold-btn" data-type="weight" data-amount="-2.5">-2.5</button>
                     </div>
                 </div>
 
-                <!-- 回数（Reps）の増減 -->
-                <div class="col-6">
-                    <label class="form-label small fw-bold text-muted">回数</label>
-                    <div class="input-group input-group-lg mb-2">
-                        <input type="number" id="reps-input" class="form-control rounded-3" placeholder="0" inputmode="numeric">
-                        <span class="input-group-text bg-light text-muted font-monospace small">Reps</span>
+                <!-- 自力回数（Reps） -->
+                <div class="col-3">
+                    <label class="form-label small fw-bold text-muted">自力回数</label>
+                    <div class="input-group input-group-md mb-2">
+                        <input type="number" id="reps-input" class="form-control rounded-3 fw-bold" placeholder="0" inputmode="numeric">
                     </div>
-                    <div class="d-flex flex-wrap gap-1">
-                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('reps', -2)">-2</button>
-                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('reps', -1)">-1</button>
-                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('reps', 1)">+1</button>
-                        <button class="btn btn-light btn-sm flex-fill border text-muted fw-bold" onclick="adjustValue('reps', 2)">+2</button>
+                    <div class="d-flex flex-column gap-1">
+                        <button class="btn btn-light btn-sm border text-muted fw-bold py-1 hold-btn" data-type="reps" data-amount="1">+1</button>
+                        <button class="btn btn-light btn-sm border text-muted fw-bold py-1 hold-btn" data-type="reps" data-amount="-1">-1</button>
+                    </div>
+                </div>
+
+                <!-- 🟢 新設：補助回数（Assist Reps） -->
+                <div class="col-3">
+                    <label class="form-label small fw-bold text-muted text-nowrap">補助回数</label>
+                    <div class="input-group input-group-md mb-2">
+                        <input type="number" id="assist-input" class="form-control rounded-3 fw-bold" placeholder="0" inputmode="numeric">
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                        <button class="btn btn-light btn-sm border text-muted fw-bold py-1 hold-btn" data-type="assist" data-amount="1">+1</button>
+                        <button class="btn btn-light btn-sm border text-muted fw-bold py-1 hold-btn" data-type="assist" data-amount="-1">-1</button>
                     </div>
                 </div>
             </div>
@@ -92,10 +100,10 @@
             </button>
         </div>
 
-        <!-- 3. メイン画面側の簡易履歴（直近5件のみを制限表示） -->
+        <!-- 3. メイン画面側：直近5件制限の簡易履歴リスト -->
         <div class="mb-4">
             <h5 class="fw-bold mb-3 text-dark">Recent Activity</h5>
-            <!-- JavaScriptでここに最新5件が自動生成されます -->
+            <!-- ここにJavaScriptで最新5件が自動生成されます -->
             <div id="recent-history-container" class="d-flex flex-column gap-2 mb-3"></div>
             
             <!-- 全履歴・フィルター画面を起動するボタン -->
@@ -105,18 +113,17 @@
         </div>
 
     </div> <!-- メインコンテナ終了 -->
-
     <!-- ==========================================
-    4. ハンバーガーメニュー（データ管理をスッキリ収納）
+    4. ハンバーガーメニュー（データ管理を収納）
     ========================================== -->
-    <div class="offcanvas offcanvas-end bg-dark text-white" tabindex="-1" id="menuOffcanvas" aria-labelledby="menuOffcanvasLabel" style="max-width: 300px;">
+    <div class="offcanvas offcanvas-end bg-dark text-white" tabindex="-1" id="menuOffcanvas" style="max-width: 300px;">
         <div class="offcanvas-header border-bottom border-secondary py-3">
-            <h5 class="offcanvas-title fw-bold text-warning" id="menuOffcanvasLabel">Menu</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            <h5 class="offcanvas-title fw-bold text-warning">Menu</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"></button>
         </div>
         <div class="offcanvas-body p-3">
             <h6 class="fw-bold text-muted small text-uppercase mb-3">Data Management</h6>
-            <p class="small text-white-50 mb-3">機種変更時のデータ移行時のバックアップを実施できます。</p>
+            <p class="small text-white-50 mb-3">データ移行やバックアップはここで行えます。</p>
             <div class="d-grid gap-2">
                 <button class="btn btn-outline-light fw-bold text-start py-2.5" onclick="exportData()">📤 データを書き出す</button>
                 <label class="btn btn-outline-warning fw-bold text-start mb-0 py-2.5" style="cursor: pointer;">
@@ -129,7 +136,7 @@
 
 
     <!-- ==========================================
-    5. グラフ用全画面モーダル本体
+    5. グラフ用全画面モーダル本体（補助込みの選択肢を統合）
     ========================================== -->
     <div class="modal fade" id="chartModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen">
@@ -142,29 +149,27 @@
                     
                     <!-- 期間切り替えタブ -->
                     <ul class="nav nav-pills nav-fill bg-white p-1 rounded-3 shadow-sm mb-2" id="periodTab">
-                        <li class="nav-item">
-                            <button class="nav-link active fw-bold py-2" id="btn-day" onclick="changePeriod('day')" type="button">日別</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link fw-bold py-2" id="btn-month" onclick="changePeriod('month')" type="button">月別</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link fw-bold py-2" id="btn-year" onclick="changePeriod('year')" type="button">年別</button>
-                        </li>
+                        <li class="nav-item"><button class="nav-link active fw-bold py-2" id="btn-day" onclick="changePeriod('day')" type="button">日別</button></li>
+                        <li class="nav-item"><button class="nav-link fw-bold py-2" id="btn-month" onclick="changePeriod('month')" type="button">月別</button></li>
+                        <li class="nav-item"><button class="nav-link fw-bold py-2" id="btn-year" onclick="changePeriod('year')" type="button">年別</button></li>
                     </ul>
                     
-                    <!-- 年別フィルター（月別選択時のみ自動出現） -->
+                    <!-- 年別フィルター（月別選択時のみ出現） -->
                     <div id="year-filter-container" class="mb-2" style="display: none;">
                         <select id="year-select" class="form-select form-select-sm rounded-3 fw-bold text-muted" onchange="updateChart()"></select>
                     </div>
                     
-                    <!-- グラフタイプ切り替えタブ -->
-                    <ul class="nav nav-pills nav-fill bg-white p-1 rounded-3 mb-3 border shadow-sm" id="chartTypeTab" style="font-size: 14px;">
+                    <!-- 🟢 グラフタイプ切り替えタブ（3つのパターンに拡張） -->
+                    <ul class="nav nav-pills nav-fill bg-white p-1 rounded-3 mb-3 border shadow-sm" id="chartTypeTab" style="font-size: 13px;">
                         <li class="nav-item">
-                            <button class="nav-link active fw-bold py-1 text-secondary" id="btn-type-line" onclick="changeChartType('line')" type="button">📈 折れ線 (最高回数)</button>
+                            <button class="nav-link active fw-bold py-1 text-secondary" id="btn-type-line" onclick="changeChartType('line')" type="button">📈 自力のみ</button>
                         </li>
                         <li class="nav-item">
-                            <button class="nav-link fw-bold py-1 text-secondary" id="btn-type-bar" onclick="changeChartType('bar')" type="button">📊 棒グラフ (総負荷量)</button>
+                            <!-- 🟢 新設：補助回数込みの折れ線グラフ切り替えボタン -->
+                            <button class="nav-link fw-bold py-1 text-secondary" id="btn-type-line-assist" onclick="changeChartType('line-assist')" type="button">💪 補助込み</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link fw-bold py-1 text-secondary" id="btn-type-bar" onclick="changeChartType('bar')" type="button">📊 総負荷量</button>
                         </li>
                     </ul>
                     
@@ -179,7 +184,7 @@
 
 
     <!-- ==========================================
-    6. 重量・日付フィルター付き 全画面履歴モーダル本体
+    6. 重量・補助・日付フィルター付き 全画面履歴モーダル本体
     ========================================== -->
     <div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen">
@@ -190,14 +195,21 @@
                 </div>
                 <div class="modal-body bg-light p-3 d-flex flex-column" style="overflow-y: auto;">
                     
-                    <!-- 🟢 フィルター設定カード -->
+                    <!-- 🟢 フィルター設定カード（補助選択を追加） -->
                     <div class="card border-0 shadow-sm rounded-3 p-3 mb-3 bg-white">
                         <div class="row g-2">
-                            <!-- 重量絞り込みセレクトボックス -->
-                            <div class="col-12 mb-1">
+                            <!-- 重量絞り込み -->
+                            <div class="col-6">
                                 <label class="form-label small fw-bold text-muted mb-1">重量で絞り込み</label>
-                                <select id="filter-weight-select" class="form-select form-select-sm rounded-2 text-muted fw-bold" onchange="filterHistoryList()">
-                                    <!-- 過去に扱った重量が自動で入ります -->
+                                <select id="filter-weight-select" class="form-select form-select-sm rounded-2 text-muted fw-bold" onchange="filterHistoryList()"></select>
+                            </div>
+                            <!-- 🟢 新設：補助回数の有無フィルター -->
+                            <div class="col-6">
+                                <label class="form-label small fw-bold text-muted mb-1">補助回数</label>
+                                <select id="filter-assist-select" class="form-select form-select-sm rounded-2 text-muted fw-bold" onchange="filterHistoryList()">
+                                    <option value="all">すべて</option>
+                                    <option value="has-assist">補助ありのみ</option>
+                                    <option value="no-assist">自力のみ</option>
                                 </select>
                             </div>
                             <!-- 日付範囲カレンダー -->
@@ -212,16 +224,14 @@
                         </div>
                     </div>
 
-                    <!-- 🟢 フィルターされた全履歴が並ぶコンテナ -->
-                    <div id="full-history-container" class="d-flex flex-column gap-2 pb-4">
-                        <!-- ここにJavaScriptで1件ずつ履歴カードが出現します -->
-                    </div>
+                    <!-- フィルターされた全履歴が並ぶコンテナ -->
+                    <div id="full-history-container" class="d-flex flex-column gap-2 pb-4"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 自作ライブラリ-->
+    <!-- 各種JavaScriptライブラリの読み込み -->
     <script src="js/app.js"></script>
     <script src="js/backup.js"></script>
     <script src="js/chart.js"></script>
