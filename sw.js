@@ -4,14 +4,14 @@ const CACHE_NAME = 'workout-log-cache-v3';
 
 const urlsToCache = [
     'index.html',
-    'home.html',
     'manifest.json',
     'css/lib/bootstrap.min.css',
     'css/home.css',
     'js/lib/dexie.min.js',
     'js/lib/chart.umd.min.js',
     'js/lib/bootstrap.min.js',
-    'js/auth.js',
+    'js/app.js',
+    'js/backup.js',
     'js/chart.js'
 ];
 
