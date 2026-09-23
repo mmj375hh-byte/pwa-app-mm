@@ -4,22 +4,23 @@
 
 // 📤 データをJSONファイルとして書き出す
 async function exportData() {
+    // データベースから全記録を取得
     const allRecords = await db.records.toArray();
-    const fileName = `workout_backup_${new Date().toISOString().slice(0,10).replace(/-/g, '_')}.json`;
-    const file = new File([JSON.stringify(allRecords, null, 2)], fileName, { type: "application/json" });
     
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        try { 
-            await navigator.share({ files: [file], title: 'Workout Data Backup' }); 
-        } catch (err) { 
-            console.log('バックアップがキャンセルされました', err); 
-        }
-    } else {
-        const anchor = document.createElement("a"); 
-        anchor.download = fileName;
-        anchor.href = window.URL.createObjectURL(new Blob([JSON.stringify(allRecords, null, 2)], { type: "application/json" }));
-        anchor.click();
-    }
+    // ファイル名を生成 (例: workout_backup_2026_09_23.json)
+    const fileName = `workout_backup_${new Date().toISOString().slice(0,10).replace(/-/g, '_')}.json`;
+    
+    // JSONデータを純粋なBlob（ファイル実体）に変換
+    const blob = new Blob([JSON.stringify(allRecords, null, 2)], { type: "application/json" });
+    
+    // スマホ・PC共通のダウンロード処理を実行
+    const anchor = document.createElement("a"); 
+    anchor.download = fileName;
+    anchor.href = window.URL.createObjectURL(blob);
+    anchor.click();
+    
+    // 使用したメモリの解放処理
+    window.URL.revokeObjectURL(anchor.href);
 }
 
 // 📥 JSONファイルを読み込んでデータを復元する

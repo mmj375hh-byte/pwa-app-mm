@@ -125,6 +125,12 @@ async function addRecord() {
         return;
     }
 
+    // ボタン非活性
+    const saveBtn = document.querySelector('button[onclick="addRecord()"]');
+    if (saveBtn) {
+        saveBtn.disabled = true;
+    }
+
     // データベースへの登録（assistを保存）
     await db.records.add({ 
         date: dateInput, 
@@ -135,6 +141,23 @@ async function addRecord() {
     });
     
     await updateApp();
+
+    // 完了通知として一瞬文字置き換え
+    if (saveBtn) {
+        saveBtn.classList.remove('btn-danger'); // 元の赤色を消す
+        saveBtn.classList.add('btn-success');    // Bootstrapの鮮やかな緑色にする
+        saveBtn.textContent = '✓ 記録を保存しました';
+    }
+
+    // 1秒間（1000ミリ秒）緑色の完了画面をキープしたあと、元の赤いボタンにおせる状態で戻す
+    setTimeout(() => {
+        if (saveBtn) {
+            saveBtn.classList.remove('btn-success'); // 緑色を消す
+            saveBtn.classList.add('btn-danger');    // 元の赤色に戻す
+            saveBtn.textContent = '記録を保存';
+            saveBtn.disabled = false; // ボタンのロックを解除
+        }
+    }, 1000);
 }
 
 // クイック「＋」「ー」ボタンが押されたときの計算
@@ -154,7 +177,7 @@ adjustValue(type, amount); // 1回目は押した瞬間に即座に実行
 delayId = setTimeout(() => {
     timerId = setInterval(() => {
     adjustValue(type, amount);
-    }, 100); // 0.1秒（100ms）間隔で等速連打（速度はお好みで調整してください）
+    }, 150); // 0.1秒（100ms）間隔で等速連打（速度はお好みで調整してください）
 }, 400);
 }
 
