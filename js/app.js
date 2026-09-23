@@ -376,8 +376,13 @@ async function generateYearOptions() {
 // 折れ線 ↔ 棒グラフ 切り替えタブ
 function changeChartType(type) {
     currentChartType = type;
-    document.querySelectorAll('#chartTypeTab .nav-link').forEach(btn => btn.classList.remove('active'));
+    // 1. 上下の2段に分かれたすべてのタブボタンから青色（active）を一度リセットする
+    document.querySelectorAll('#chartTypeTabLine .nav-link, #chartTypeTabBar .nav-link').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    // 2. 今タップされたボタン（例: btn-type-bar-assist）だけに青色（active）を適用する
     document.getElementById(`btn-type-${type}`).classList.add('active');
+    // 3. グラフを即座に再描画する（chart.js側へ繋ぐ）
     updateChart();
 }
 

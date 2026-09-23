@@ -134,9 +134,8 @@
         </div>
     </div>
 
-
     <!-- ==========================================
-    5. グラフ用全画面モーダル本体（補助込みの選択肢を統合）
+    5. グラフ用全画面モーダル本体（4つのタブに拡張）
     ========================================== -->
     <div class="modal fade" id="chartModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-fullscreen">
@@ -159,19 +158,27 @@
                         <select id="year-select" class="form-select form-select-sm rounded-3 fw-bold text-muted" onchange="updateChart()"></select>
                     </div>
                     
-                    <!-- 🟢 グラフタイプ切り替えタブ（3つのパターンに拡張） -->
-                    <ul class="nav nav-pills nav-fill bg-white p-1 rounded-3 mb-3 border shadow-sm" id="chartTypeTab" style="font-size: 13px;">
-                        <li class="nav-item">
-                            <button class="nav-link active fw-bold py-1 text-secondary" id="btn-type-line" onclick="changeChartType('line')" type="button">📈 自力のみ</button>
-                        </li>
-                        <li class="nav-item">
-                            <!-- 🟢 新設：補助回数込みの折れ線グラフ切り替えボタン -->
-                            <button class="nav-link fw-bold py-1 text-secondary" id="btn-type-line-assist" onclick="changeChartType('line-assist')" type="button">💪 補助込み</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link fw-bold py-1 text-secondary" id="btn-type-bar" onclick="changeChartType('bar')" type="button">📊 総負荷量</button>
-                        </li>
-                    </ul>
+                    <!-- 🟢 変更：グラフタイプ切り替えタブ（4つのパターンに拡張してスマホで行を分けました） -->
+                    <div class="card border-0 shadow-sm rounded-3 p-2 mb-3 bg-white">
+                        <!-- 上段：折れ線2択 -->
+                        <ul class="nav nav-pills nav-fill bg-light p-1 rounded-2 mb-1 border" id="chartTypeTabLine" style="font-size: 13px;">
+                            <li class="nav-item">
+                                <button class="nav-link active fw-bold py-1 text-secondary" id="btn-type-line" onclick="changeChartType('line')" type="button">📈 自力のみ (回数)</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link fw-bold py-1 text-secondary" id="btn-type-line-assist" onclick="changeChartType('line-assist')" type="button">💪 補助込み (回数)</button>
+                            </li>
+                        </ul>
+                        <!-- 下段：棒グラフ2択 -->
+                        <ul class="nav nav-pills nav-fill bg-light p-1 rounded-2 border" id="chartTypeTabBar" style="font-size: 13px;">
+                            <li class="nav-item">
+                                <button class="nav-link fw-bold py-1 text-secondary" id="btn-type-bar" onclick="changeChartType('bar')" type="button">📊 自力のみ (総重量)</button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link fw-bold py-1 text-secondary" id="btn-type-bar-assist" onclick="changeChartType('bar-assist')" type="button">🧱 補助込み (総重量)</button>
+                            </li>
+                        </ul>
+                    </div>
                     
                     <!-- グラフキャンバスエリア -->
                     <div class="card border-0 shadow-sm rounded-4 p-3 flex-grow-1 d-flex align-items-center justify-content-center bg-white" style="min-height: 300px;">
@@ -195,7 +202,7 @@
                 </div>
                 <div class="modal-body bg-light p-3 d-flex flex-column" style="overflow-y: auto;">
                     
-                    <!-- 🟢 フィルター設定カード（補助選択を追加） -->
+                    <!-- フィルター設定カード -->
                     <div class="card border-0 shadow-sm rounded-3 p-3 mb-3 bg-white">
                         <div class="row g-2">
                             <!-- 重量絞り込み -->
@@ -203,7 +210,7 @@
                                 <label class="form-label small fw-bold text-muted mb-1">重量で絞り込み</label>
                                 <select id="filter-weight-select" class="form-select form-select-sm rounded-2 text-muted fw-bold" onchange="filterHistoryList()"></select>
                             </div>
-                            <!-- 🟢 新設：補助回数の有無フィルター -->
+                            <!-- 補助回数の有無フィルター -->
                             <div class="col-6">
                                 <label class="form-label small fw-bold text-muted mb-1">補助回数</label>
                                 <select id="filter-assist-select" class="form-select form-select-sm rounded-2 text-muted fw-bold" onchange="filterHistoryList()">

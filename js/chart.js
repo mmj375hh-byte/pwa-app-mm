@@ -1,5 +1,5 @@
 // ==========================================
-// 📊 統合グラフ描画ロジック（chart.js専用）
+// 📊 4パターン描き分け対応：グラフ描画ロジック
 // ==========================================
 async function updateChart() {
     const canvas = document.getElementById('weightChart');
@@ -40,9 +40,9 @@ async function updateChart() {
     // グラフの線に使用するカラーパレット
     const colors = ['#ff5722', '#2196f3', '#4caf50', '#9c27b0', '#009688', '#ffeb3b'];
 
-    // 2. 🟢 3択のグラフタイプ（自力折れ線、補助込み折れ線、総負荷棒グラフ）に応じて分岐
+    // 2. 🟢 4つのグラフタイプ（自力線、補助線、自力棒、補助棒）に応じて集計・描画を分岐
     if (currentChartType === 'line') {
-        // 【パターンA：📈 折れ線（自力回数のみ）モード】
+        // 【パターン1：📈 折れ線（自力回数のみ）モード】
         const groupedLine = {}; labels.forEach(l => { groupedLine[l] = {}; });
         records.forEach(r => {
             let l = r.date;
@@ -54,78 +54,64 @@ async function updateChart() {
         });
 
         const datasets = uniqueWeights.map((w, i) => ({
-            label: `${w} kg (自力)`, 
+            label: `${w} kg`, 
             data: labels.map(l => groupedLine[l][w] !== undefined ? groupedLine[l][w] : null),
             borderColor: colors[i % colors.length], 
             backgroundColor: colors[i % colors.length], 
-            borderWidth: 2, 
-            tension: 0.1, 
-            spanGaps: true
+            borderWidth: 2, tension: 0.1, spanGaps: true
         }));
 
         myChart = new Chart(ctx, {
-            type: 'line', 
-            data: { labels: labels, datasets: datasets },
+            type: 'line', data: { labels: labels, datasets: datasets },
             options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
+                responsive: true, maintainAspectRatio: false, 
                 plugins: { title: { display: true, text: '最高自力回数推移（補助なし）' } },
                 scales: { y: { beginAtZero: false, ticks: { stepSize: 1 } } } 
             }
         });
-    }
+    } 
     else if (currentChartType === 'line-assist') {
-        // 【パターンB：💪 折れ線（補助込み合計回数）モード】
+        // 【パターン2：💪 折れ線（補助込み合計回数）モード】
         const groupedLineAssist = {}; labels.forEach(l => { groupedLineAssist[l] = {}; });
         records.forEach(r => {
             let l = r.date;
             if (currentPeriod === 'month') l = r.date.slice(5, 7) + "月";
             else if (currentPeriod === 'year') l = r.date.slice(0, 4) + "年";
             
-            // 🟢 補助回数（r.assist）がなければ0として、自力回数と合算（総レップ数）
             const assistReps = r.assist ? parseInt(r.assist) : 0;
-            const totalReps = r.reps + assistReps;
+            const totalReps = r.reps + assistReps; // 自力 ＋ 補助
             
-            // 合計回数の最大値を集計
             groupedLineAssist[l][r.weight] = groupedLineAssist[l][r.weight] ? Math.max(groupedLineAssist[l][r.weight], totalReps) : totalReps;
         });
 
         const datasets = uniqueWeights.map((w, i) => ({
-            label: `${w} kg (補助込)`, 
+            label: `${w} kg`, 
             data: labels.map(l => groupedLineAssist[l][w] !== undefined ? groupedLineAssist[l][w] : null),
-            borderColor: colors[i % colors.length], 
-            backgroundColor: colors[i % colors.length], 
-            borderWidth: 2, 
-            pointStyle: 'rectRot', // 自力グラフと見分けやすくするため、点の形をひし形に変更
-            pointRadius: 6,
-            tension: 0.1, 
-            spanGaps: true
+            borderColor: colors[i % colors.length], backgroundColor: colors[i % colors.length], 
+            borderWidth: 2, pointStyle: 'rectRot', pointRadius: 6, tension: 0.1, spanGaps: true
         }));
 
         myChart = new Chart(ctx, {
-            type: 'line', 
-            data: { labels: labels, datasets: datasets },
+            type: 'line', data: { labels: labels, datasets: datasets },
             options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
+                responsive: true, maintainAspectRatio: false, 
                 plugins: { title: { display: true, text: '最高合計回数推移（自力 ＋ 補助）' } },
                 scales: { y: { beginAtZero: false, ticks: { stepSize: 1 } } } 
             }
         });
-    } 
-    else {
-        // 【パターンC：📊 積み上げ棒グラフ（総負荷ボリューム）モード】
+    }
+    else if (currentChartType === 'bar') {
+        // 【パターン3：📊 積み上げ棒グラフ（自力ボリュームのみ）モード】
         const groupedBar = {}; labels.forEach(l => { groupedBar[l] = {}; uniqueWeights.forEach(w => { groupedBar[l][w] = 0; }); });
+        
         records.forEach(r => {
             let l = r.date;
             if (currentPeriod === 'month') l = r.date.slice(5, 7) + "月";
             else if (currentPeriod === 'year') l = r.date.slice(0, 4) + "年";
             
-            // 🟢 総ボリューム計算時にも、補助回数を含めた総負荷として計算（重量 ×（自力 ＋ 補助））
-            const assistReps = r.assist ? parseInt(r.assist) : 0;
-            const totalVolume = r.weight * (r.reps + assistReps);
-            
-            groupedBar[l][r.weight] += totalVolume;
+            // 🟢 純粋な「重量 × 自力回数」だけで総負荷量を計算
+            const selfVolume = r.weight * r.reps;
+            groupedBar[l][r.weight] += selfVolume;
         });
 
         const datasets = uniqueWeights.map((w, i) => ({
@@ -137,11 +123,44 @@ async function updateChart() {
         }));
 
         myChart = new Chart(ctx, {
-            type: 'bar', 
-            data: { labels: labels, datasets: datasets },
+            type: 'bar', data: { labels: labels, datasets: datasets },
             options: { 
-                responsive: true, 
-                maintainAspectRatio: false, 
+                responsive: true, maintainAspectRatio: false, 
+                plugins: { title: { display: true, text: '総ボリューム集計（重量 × 自力回数のみ）' } },
+                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } 
+            }
+        });
+    } 
+    else if (currentChartType === 'bar-assist') {
+        // 【パターン4：🧱 積み上げ棒グラフ（補助込み総ボリューム）モード】
+        const groupedBarAssist = {}; labels.forEach(l => { groupedBarAssist[l] = {}; uniqueWeights.forEach(w => { groupedBarAssist[l][w] = 0; }); });
+        
+        records.forEach(r => {
+            let l = r.date;
+            if (currentPeriod === 'month') l = r.date.slice(5, 7) + "月";
+            else if (currentPeriod === 'year') l = r.date.slice(0, 4) + "年";
+            
+            // 🟢 自力回数 ＋ 補助回数の「総回数」を反映
+            const assistReps = r.assist ? parseInt(r.assist) : 0;
+            const totalReps = r.reps + assistReps;
+            
+            // 重量 × 総回数 で、限界を超えた全体の総負荷量を計算
+            const totalVolume = r.weight * totalReps;
+            groupedBarAssist[l][r.weight] += totalVolume;
+        });
+
+        const datasets = uniqueWeights.map((w, i) => ({
+            label: `${w} kg`, 
+            data: labels.map(l => groupedBarAssist[l][w]), 
+            backgroundColor: colors[i % colors.length], 
+            borderColor: colors[i % colors.length], 
+            borderWidth: 1
+        }));
+
+        myChart = new Chart(ctx, {
+            type: 'bar', data: { labels: labels, datasets: datasets },
+            options: { 
+                responsive: true, maintainAspectRatio: false, 
                 plugins: { title: { display: true, text: '総ボリューム集計（重量 × 総回数）' } },
                 scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } 
             }
