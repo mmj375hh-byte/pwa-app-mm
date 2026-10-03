@@ -38,8 +38,11 @@ async function updateChart() {
     if (myChart) myChart.destroy(); // 古いグラフを破棄
 
     // グラフの線に使用するカラーパレット
-    const colors = ['#ff5722', '#2196f3', '#4caf50', '#9c27b0', '#009688', '#ffeb3b'];
-
+    const colors = [
+        '#FF5733', '#33FF57', '#3357FF', '#F3FF33', '#FF33F3', '#33FFF0',
+        '#FFA500', '#8A2BE2', '#00CED1', '#FF1493', '#7FFF00', '#FF4500'
+    ];
+    
     // 2. 🟢 4つのグラフタイプ（自力線、補助線、自力棒、補助棒）に応じて集計・描画を分岐
     if (currentChartType === 'line') {
         // 【パターン1：📈 折れ線（自力回数のみ）モード】
