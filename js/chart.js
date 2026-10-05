@@ -14,8 +14,22 @@ async function updateChart() {
     if (currentPeriod === 'day') {
         records = records.slice(-30); // 日別は最新の30セットに絞る
     } else if (currentPeriod === 'month') {
-        const selYear = document.getElementById('year-select').value;
-        records = records.filter(r => r.date.startsWith(selYear)); // 月別は選択年のみに絞る
+// 🟢 【新規追加】プルダウン要素を取得
+        const yearSelect = document.getElementById('year-select');
+
+        if (yearSelect) {
+            // もしプルダウンの初期値が空っぽ（選択されていない）場合
+            if (!yearSelect.value && records.length > 0) {
+                // データベースの一番最後のデータ（＝最新データ）から「年（最初の4文字）」を抽出
+                const latestYear = records[records.length - 1].date.slice(0, 4);
+                // プルダウンの選択状態を最新年に強制セットする
+                yearSelect.value = latestYear;
+            }
+        }
+
+        // 選択された年のデータのみに絞り込む（ここは既存の処理のままです）
+        const selYear = yearSelect ? yearSelect.value : '';
+        records = records.filter(r => r.date.startsWith(selYear));
     }
     if (records.length === 0) { if (myChart) myChart.destroy(); myChart = null; return; }
 
