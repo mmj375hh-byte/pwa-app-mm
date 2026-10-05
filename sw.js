@@ -12,7 +12,8 @@ const urlsToCache = [
     'js/lib/bootstrap.min.js',
     'js/app.js',
     'js/backup.js',
-    'js/chart.js'
+    'js/chart.js',
+    'js/chart_advanced.js'
 ];
 
 self.addEventListener('install', (event) => {

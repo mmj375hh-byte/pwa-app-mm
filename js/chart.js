@@ -14,9 +14,8 @@ async function updateChart() {
     if (currentPeriod === 'day') {
         records = records.slice(-30); // 日別は最新の30セットに絞る
     } else if (currentPeriod === 'month') {
-// 🟢 【新規追加】プルダウン要素を取得
+        // プルダウン要素を取得
         const yearSelect = document.getElementById('year-select');
-
         if (yearSelect) {
             // もしプルダウンの初期値が空っぽ（選択されていない）場合
             if (!yearSelect.value && records.length > 0) {
