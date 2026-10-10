@@ -53,7 +53,10 @@ async function updateAdvancedChart() {
 
     if (myAdvancedChart) myAdvancedChart.destroy(); 
 
-    const colors = ['#FF5733', '#33FF57', '#3357FF', '#F3FF33', '#FF33F3', '#33FFF0', '#FFA500', '#8A2BE2', '#00CED1', '#FF1493', '#7FFF00', '#FF4500'];
+    const colors = [
+        '#FF5733', '#33FF57', '#3357FF', '#D4AF37', '#FF33F3', '#33FFF0',
+        '#FFA500', '#8A2BE2', '#00CED1', '#FF1493', '#7FFF00', '#FF4500'
+    ];
     let chartType = 'line';
     
     let chartOptions = {

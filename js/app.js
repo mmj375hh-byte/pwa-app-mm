@@ -115,13 +115,14 @@ async function addRecord() {
     const dateInput = document.getElementById('date-input').value;
     const exercise = document.getElementById('exercise-select').value;
     const weight = parseFloat(document.getElementById('weight-input').value);
-    const reps = parseInt(document.getElementById('reps-input').value);
-    // 🟢 補助回数の値を取得（未入力なら0にする）
+    let reps = parseInt(document.getElementById('reps-input').value);
     let assist = parseInt(document.getElementById('assist-input').value);
+    // 回数は未入力なら0にする
     if (isNaN(assist)) assist = 0;
+    if (isNaN(reps)) reps = 0;
 
-    if (!dateInput || isNaN(weight) || isNaN(reps)) {
-        alert('すべて正しく入力してください');
+    if (!dateInput || isNaN(weight) ) {
+        alert('重量と日付は入力してください');
         return;
     }
 
