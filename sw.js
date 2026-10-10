@@ -1,4 +1,4 @@
-const CACHE_NAME = 'workout-log-cache-v1.0.3';
+const CACHE_NAME = 'workout-log-cache-v1.0.4';
 
 const urlsToCache = [
     './', // オフライン起動を確実にするためにルート追加
@@ -50,4 +50,10 @@ self.addEventListener('fetch', (event) => {
             return response || fetch(event.request);
         })
     );
+});
+
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.action === 'skipWaiting') {
+        self.skipWaiting(); // 画面側からの合図を受け取って、最新キャッシュを有効化する
+    }
 });

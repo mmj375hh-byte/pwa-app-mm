@@ -52,7 +52,7 @@ async function updateChart() {
 
     // グラフの線に使用するカラーパレット
     const colors = [
-        '#FF5733', '#33FF57', '#3357FF', '#FFD700', '#FF33F3', '#33FFF0',
+        '#000000', '#33FF57', '#3357FF', '#FFD700', '#FF33F3', '#33FFF0',
         '#FFA500', '#8A2BE2', '#00CED1', '#FF1493', '#7FFF00', '#FF4500'
     ];
 

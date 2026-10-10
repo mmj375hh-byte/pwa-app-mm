@@ -164,7 +164,7 @@
             <div class="modal-content border-0">
                 <div class="modal-header bg-dark text-white border-0 py-3">
                     <h5 class="modal-title fw-bold" id="modal-title-text">Analytics</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" data-bs-focus="false"></button>
                 </div>
                 <div class="modal-body bg-light p-3 d-flex flex-column">
 
@@ -230,7 +230,7 @@
                 <div class="modal-header bg-dark text-white border-0 py-3">
                     <h5 class="modal-title fw-bold">Analytics（改良版）</h5>
                     <!-- 🟢 onclickを排除し、Bootstrap標準のデータ属性のみで安全に閉じる -->
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" data-bs-focus="false"></button>
                 </div>
                 <div class="modal-body bg-light p-3 d-flex flex-column">
 
@@ -360,6 +360,13 @@
                         //console.log('Service Worker 登録成功');
                         // アプリ起動時に常に更新チェックをかける
                         registration.update();
+
+                        if (registration.waiting) {
+                            // 裏で待機していた最新版（新しい色）に主導権を切り替える合図を送る
+                            registration.waiting.postMessage({ action: 'skipWaiting' });
+                            // iOSの自動リロード無視バグを突破するために、100ミリ秒後に強制リロードをかける
+                            setTimeout(() => { window.location.reload(); }, 100);
+                        }
                     })
                     .catch((error) => {
                         console.error('Service Worker 登録失敗:', error);
