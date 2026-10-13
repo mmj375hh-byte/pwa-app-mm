@@ -15,15 +15,21 @@ let historyModalInstance = null; // 全履歴用モーダルのインスタン�
 let timerId = null;              // +-ボタン押下時制御用 時間制御
 let delayId = null;              // +-ボタン押下時制御用 間隔制御
 
+// 重量マッピングデータ
+const weightSteps = {
+    'Bench Press': [10, 5, 2.5],
+    'Dumbbell Press': [5, 2, 1]
+};
+
 // 画面が読み込まれたら自動的に実行する処理
 window.addEventListener('DOMContentLoaded', async () => {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.js').catch(err => console.error(err));
     }
-    
+
     // 日付入力欄の初期値を今日の年月日(YYYY-MM-DD)に自動設定
-    document.getElementById('date-input').value = new Date().toISOString().slice(0, 10);
-    
+    document.getElementById('date-input').value = new Date().toLocaleString().slice(0, 10).replaceAll("/", "-");
+
     // 各種モーダル要素をBootstrap機能として初期化
     const modalEl = document.getElementById('chartModal');
     if (modalEl) chartModalInstance = new bootstrap.Modal(modalEl);
@@ -40,18 +46,28 @@ window.addEventListener('DOMContentLoaded', async () => {
     // すべての「＋」「ー」ボタンボタン（.hold-btn）にイベントを紐付ける
     document.querySelectorAll('.hold-btn').forEach(button => {
         const type = button.getAttribute('data-type');
-        const amount = parseFloat(button.getAttribute('data-amount'));
+
+        // 💡 共通の関数を作り、押された瞬間の最新の data-amount を取得して startHold に渡す
+        const handleStart = () => {
+            const currentAmount = parseFloat(button.getAttribute('data-amount'));
+            startHold(type, currentAmount);
+        };
 
         // パソコン（マウス操作）
-        button.addEventListener('mousedown', () => startHold(type, amount));
+        // 💡 startHold を直接呼ぶのではなく、最新の値を読み込む handleStart を呼び出す
+        button.addEventListener('mousedown', handleStart);
         button.addEventListener('mouseup', stopHold);
         button.addEventListener('mouseleave', stopHold);
 
         // スマホ（タッチ操作）
         button.addEventListener('touchstart', (e) => {
-        e.preventDefault(); // スマホの誤ズームやメニュー表示を防止
-        startHold(type, amount);
+            // 💡 イベントがキャンセル可能な状態のときだけ、誤ズーム等を防止する
+            if (e.cancelable) {
+                e.preventDefault();
+            }
+            handleStart(); // 💡 最新の値で実行
         }, { passive: false });
+
         button.addEventListener('touchend', stopHold);
         button.addEventListener('touchcancel', stopHold);
     });
@@ -70,7 +86,7 @@ function openChartModal() {
     const select = document.getElementById('exercise-select');
     document.getElementById('modal-title-text').textContent = `${select.options[select.selectedIndex].text} Analytics`;
     chartModalInstance.show();
-    setTimeout(async () => { await updateChart(); }, 200); 
+    setTimeout(async () => { await updateChart(); }, 200);
 }
 
 // ❌ グラフ用モーダルを閉じる
@@ -86,9 +102,9 @@ async function openHistoryModal() {
     if (!historyModalInstance) return;
     const select = document.getElementById('exercise-select');
     document.getElementById('history-modal-title-text').textContent = `${select.options[select.selectedIndex].text} - 全履歴一覧`;
-    
+
     await generateFilterWeightOptions(); // 重量フィルターの選択肢を更新
-    
+
     // 各種フィルターの初期化
     document.getElementById('filter-assist-select').value = 'all';
     document.getElementById('filter-start-date').value = '';
@@ -121,7 +137,7 @@ async function addRecord() {
     if (isNaN(assist)) assist = 0;
     if (isNaN(reps)) reps = 0;
 
-    if (!dateInput || isNaN(weight) ) {
+    if (!dateInput || isNaN(weight)) {
         alert('重量と日付は入力してください');
         return;
     }
@@ -133,14 +149,14 @@ async function addRecord() {
     }
 
     // データベースへの登録（assistを保存）
-    await db.records.add({ 
-        date: dateInput, 
-        exercise: exercise, 
-        weight: weight, 
+    await db.records.add({
+        date: dateInput,
+        exercise: exercise,
+        weight: weight,
         reps: reps,
         assist: assist
     });
-    
+
     await updateApp();
 
     // 完了通知として一瞬文字置き換え
@@ -172,22 +188,22 @@ function adjustValue(inputId, amount) {
 
 // 「＋」「ー」ボタン長押し（ホールド）開始
 function startHold(type, amount) {
-adjustValue(type, amount); // 1回目は押した瞬間に即座に実行
+    adjustValue(type, amount); // 1回目は押した瞬間に即座に実行
 
-// 0.4秒（400ms）長押しされたら、一定の等速で連打モードを開始
-delayId = setTimeout(() => {
-    timerId = setInterval(() => {
-    adjustValue(type, amount);
-    }, 150); // 0.1秒（100ms）間隔で等速連打（速度はお好みで調整してください）
-}, 400);
+    // 0.4秒（400ms）長押しされたら、一定の等速で連打モードを開始
+    delayId = setTimeout(() => {
+        timerId = setInterval(() => {
+            adjustValue(type, amount);
+        }, 150); // 0.1秒（100ms）間隔で等速連打（速度はお好みで調整してください）
+    }, 400);
 }
 
 // 「＋」「ー」ボタン長押し（ホールド）停止
 function stopHold() {
-clearTimeout(delayId);
-clearInterval(timerId);
-delayId = null;
-timerId = null;
+    clearTimeout(delayId);
+    clearInterval(timerId);
+    delayId = null;
+    timerId = null;
 }
 
 // 履歴の削除処理
@@ -195,7 +211,7 @@ async function deleteRecord(id) {
     if (confirm('この記録を削除してもよろしいですか？')) {
         await db.records.delete(id);
         await updateApp();
-        
+
         if (document.getElementById('historyModal').classList.contains('show')) {
             await generateFilterWeightOptions();
             await filterHistoryList();
@@ -211,26 +227,26 @@ async function deleteRecord(id) {
 async function updateHistoryList() {
     const container = document.getElementById('recent-history-container');
     if (!container) return;
-    
+
     const exercise = document.getElementById('exercise-select').value;
     let records = await db.records.where('exercise').equals(exercise).toArray();
-    
+
     // 日付の新しい順(降順)・IDの降順にソート
     records.sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
     records = records.slice(0, 5); // 直近5件を切り取る
-    
+
     container.innerHTML = '';
 
     if (records.length === 0) {
         container.innerHTML = '<div class="text-muted text-center small py-3">記録がまだありません</div>';
         return;
     }
-    
+
     records.forEach(r => {
         const fmtDate = r.date.replace(/^\d{4}-/, '').replace('-', '/');
         const item = document.createElement('div');
         item.className = 'card border-0 shadow-sm rounded-3 p-3 d-flex flex-row align-items-center justify-content-between history-list-item bg-white';
-        
+
         // 🟢 補助回数（r.assist）がある場合は「10 + 2」のようにテキストを組み立てる
         let repsDisplay = `<strong class="text-dark h6 mb-0">${r.reps}</strong>`;
         if (r.assist > 0) {
@@ -263,7 +279,7 @@ async function generateFilterWeightOptions() {
 
     const currentSelected = weightSelect.value;
     weightSelect.innerHTML = '<option value="all">すべての重量</option>';
-    
+
     sortedWeights.forEach(w => {
         const opt = document.createElement('option');
         opt.value = w; opt.textContent = `${w} kg`;
@@ -319,7 +335,7 @@ async function filterHistoryList() {
         const fmtDate = r.date.replace(/^\d{4}-/, '').replace('-', '/');
         const item = document.createElement('div');
         item.className = 'card border-0 shadow-sm rounded-3 p-3 d-flex flex-row align-items-center justify-content-between history-list-item bg-white';
-        
+
         let repsDisplay = `<strong class="text-dark h6 mb-0">${r.reps}</strong>`;
         if (r.assist > 0) {
             repsDisplay += ` <span class="text-primary font-monospace small">+${r.assist}</span>`;
@@ -343,7 +359,7 @@ async function changePeriod(period) {
     currentPeriod = period;
     document.querySelectorAll('#periodTab .nav-link').forEach(btn => btn.classList.remove('active'));
     document.getElementById(`btn-${period}`).classList.add('active');
-    
+
     const yearFilter = document.getElementById('year-filter-container');
     if (period === 'month') {
         await generateYearOptions();
@@ -387,9 +403,36 @@ function changeChartType(type) {
     updateChart();
 }
 
+// 重量ボタン更新
+async function updateWeightButtons() {
+    // 関数が呼ばれたタイミングで、最新のプルダウンとボタンを毎回取得する
+    const exerciseSelect = document.getElementById('exercise-select');
+    const weightButtons = document.querySelectorAll('button[data-type="weight"]');
+
+    if (!exerciseSelect || weightButtons.length === 0) return;
+
+    // 現在選択されているvalue（"Bench Press" など）を取得デフォルトでベンチプレス
+    const selectedExercise = exerciseSelect.value;
+    const steps = weightSteps[selectedExercise] || weightSteps['Bench Press'];
+
+    // ボタンの書き換え処理
+    weightButtons.forEach((button, index) => {
+        if (index < 3) {
+            const val = steps[index];
+            button.setAttribute('data-amount', val);
+            button.textContent = `+${val}`;
+        } else {
+            const val = steps[index - 3];
+            button.setAttribute('data-amount', -val);
+            button.textContent = `-${val}`;
+        }
+    });
+}
+
 // 統合更新関数
 async function updateApp() {
     if (currentPeriod === 'month') await generateYearOptions();
     await updateChart(); // chart.js側のグラフ描画関数を呼び出す
     await updateHistoryList();
+    await updateWeightButtons();
 }
