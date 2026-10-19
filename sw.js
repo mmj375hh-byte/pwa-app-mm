@@ -1,4 +1,4 @@
-const CACHE_NAME = 'workout-log-cache-v1.0.6';
+const CACHE_NAME = 'workout-log-cache-v1.0.7';
 
 const urlsToCache = [
     './', // オフライン起動を確実にするためにルート追加

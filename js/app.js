@@ -9,7 +9,9 @@ db.version(1).stores({
 // 全体で使用する共通の変数（すべてのファイルで共有）
 let myChart = null;              // グラフのインスタンス
 let currentPeriod = 'day';       // 集計期間の初期値（日別）
+let currentPeriodExp = 'day';       // 集計期間の初期値改良用（日別）
 let currentChartType = 'line';   // グラフタイプの初期値（自力折れ線）
+let currentChartTypeExp = 'line';   // グラフタイプの初期値改良用（自力折れ線）
 let chartModalInstance = null;   // グラフ用モーダルのインスタンス
 let historyModalInstance = null; // 全履歴用モーダルのインスタンス
 let timerId = null;              // +-ボタン押下時制御用 時間制御

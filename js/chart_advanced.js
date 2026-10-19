@@ -12,9 +12,33 @@ async function updateAdvancedChart() {
     let records = await db.records.where('exercise').equals(exercise).sortBy('date');
     if (records.length === 0) { if (myAdvancedChart) myAdvancedChart.destroy(); myAdvancedChart = null; return; }
 
-    if (currentPeriod === 'day') {
-        records = records.slice(-30);
-    } else if (currentPeriod === 'month') {
+    if (currentPeriodExp === 'day') {
+        // =============================================================
+        // 🟢 既存の id インデックスを使い、最新（逆順）からスキャンする
+        // =============================================================
+        let fetchedRecords = [];
+        let uniqueDates = new Set();
+
+        // db.records の後ろ（最新のID）から逆順に1件ずつチェック
+        await db.records
+            .reverse() // 👈 これが「idインデックスを使って逆順にめくる」という指示になります
+            .until(record => {
+                // 選択された種目（exercise）のデータだけを拾う
+                if (record.exercise === exercise) {
+                    uniqueDates.add(record.date);
+                    
+                    // 7つの異なる日付を超えたら、DBのスキャンをその場で「即座に終了」する
+                    if (uniqueDates.size > 7) return true; 
+                    
+                    fetchedRecords.push(record);
+                }
+                return false;
+            })
+            .each(() => {}); // untilを起動するための空実行
+
+        // チャートの描画（日付の古い順＝左から右）に合わせるため、配列を元に戻す
+        records = fetchedRecords.reverse();
+    } else if (currentPeriodExp === 'month') {
         const yearSelectAdv = document.getElementById('year-select-advanced');
         if (yearSelectAdv) {
             // 🟢 変更：.sort((a, b) => b - a) を指定し、新しい年が上に来る「降順」に正しく並び替えます
@@ -41,7 +65,7 @@ async function updateAdvancedChart() {
     const labelsSet = new Set();
     const weightsSet = new Set();
     records.forEach(r => {
-        let l = (currentPeriod === 'month') ? r.date.slice(5, 7) + "月" : (currentPeriod === 'year') ? r.date.slice(0, 4) + "年" : r.date;
+        let l = (currentPeriodExp === 'month') ? r.date.slice(5, 7) + "月" : (currentPeriodExp === 'year') ? r.date.slice(0, 4) + "年" : r.date;
         labelsSet.add(l); weightsSet.add(r.weight);
     });
 
@@ -71,29 +95,29 @@ async function updateAdvancedChart() {
 
     const groupedData = {}; labels.forEach(l => { groupedData[l] = {}; });
 
-    if (currentChartType === 'line') {
+    if (currentChartTypeExp === 'line') {
         chartOptions.plugins.title.text = '最高自力回数推移（補助なし）';
         records.forEach(r => {
-            let l = (currentPeriod === 'month') ? r.date.slice(5, 7) + "月" : (currentPeriod === 'year') ? r.date.slice(0, 4) + "年" : r.date;
+            let l = (currentPeriodExp === 'month') ? r.date.slice(5, 7) + "月" : (currentPeriodExp === 'year') ? r.date.slice(0, 4) + "年" : r.date;
             groupedData[l][r.weight] = groupedData[l][r.weight] ? Math.max(groupedData[l][r.weight], r.reps) : r.reps;
         });
     } 
-    else if (currentChartType === 'line-assist') {
+    else if (currentChartTypeExp === 'line-assist') {
         chartOptions.plugins.title.text = '最高合計回数推移（自力 ＋ 補助）';
         records.forEach(r => {
-            let l = (currentPeriod === 'month') ? r.date.slice(5, 7) + "月" : (currentPeriod === 'year') ? r.date.slice(0, 4) + "年" : r.date;
+            let l = (currentPeriodExp === 'month') ? r.date.slice(5, 7) + "月" : (currentPeriodExp === 'year') ? r.date.slice(0, 4) + "年" : r.date;
             const totalReps = r.reps + (r.assist ? parseInt(r.assist) : 0);
             groupedData[l][r.weight] = groupedData[l][r.weight] ? Math.max(groupedData[l][r.weight], totalReps) : totalReps;
         });
     } 
-    else if (currentChartType === 'bar') {
+    else if (currentChartTypeExp === 'bar') {
         chartType = 'bar';
         chartOptions.plugins.title.text = '総ボリューム集計（重量 × 自力回数のみ）';
         chartOptions.scales.x = { stacked: true };
         chartOptions.scales.y = { stacked: true, beginAtZero: true };
         labels.forEach(l => { uniqueWeights.forEach(w => { groupedData[l][w] = 0; }); });
         records.forEach(r => {
-            let l = (currentPeriod === 'month') ? r.date.slice(5, 7) + "月" : (currentPeriod === 'year') ? r.date.slice(0, 4) + "年" : r.date;
+            let l = (currentPeriodExp === 'month') ? r.date.slice(5, 7) + "月" : (currentPeriodExp === 'year') ? r.date.slice(0, 4) + "年" : r.date;
             groupedData[l][r.weight] += (r.weight * r.reps);
         });
     }
@@ -104,7 +128,7 @@ async function updateAdvancedChart() {
         chartOptions.scales.y = { stacked: true, beginAtZero: true };
         labels.forEach(l => { uniqueWeights.forEach(w => { groupedData[l][w] = 0; }); });
         records.forEach(r => {
-            let l = (currentPeriod === 'month') ? r.date.slice(5, 7) + "月" : (currentPeriod === 'year') ? r.date.slice(0, 4) + "年" : r.date;
+            let l = (currentPeriodExp === 'month') ? r.date.slice(5, 7) + "月" : (currentPeriodExp === 'year') ? r.date.slice(0, 4) + "年" : r.date;
             const totalReps = r.reps + (r.assist ? parseInt(r.assist) : 0);
             groupedData[l][r.weight] += (r.weight * totalReps);
         });
@@ -115,6 +139,7 @@ async function updateAdvancedChart() {
         const isTargetGroup = targetInitialGroups.includes(myGroup);
         const weightsInGroup = uniqueWeights.filter(weight => Math.floor(weight / 10) * 10 === myGroup);
         const isFirstWeightInGroup = (weightsInGroup[0] === w); // 🟢バグ修正：[0]を付与し各グループの最小重量を正しく抽出
+        const pStyle = currentChartTypeExp == 'line' ? 'circle' : 'rectRot';
 
         return {
             label: `${w} kg`,
@@ -127,6 +152,7 @@ async function updateAdvancedChart() {
             pointRadius: isLine ? 4 : undefined,
             pointHoverRadius: isLine ? 6 : undefined,
             pointHitRadius: 25,
+            pointStyle: isLine ? pStyle : undefined,
             hidden: !(isTargetGroup && isFirstWeightInGroup)
         };
     });
@@ -190,7 +216,7 @@ function setupTwoStageFilterAdvanced(groups, uniqueWeights, datasets) {
 }
 
 function changePeriodAdvanced(period) {
-    currentPeriod = period;
+    currentPeriodExp = period;
     document.querySelectorAll('#periodTabAdvanced .nav-link').forEach(btn => btn.classList.remove('active'));
     if (period === 'day') document.getElementById('btn-day-adv').classList.add('active');
     if (period === 'month') document.getElementById('btn-month-adv').classList.add('active');
@@ -203,7 +229,7 @@ function changePeriodAdvanced(period) {
 }
 
 function changeChartTypeAdvanced(type) {
-    currentChartType = type;
+    currentChartTypeExp = type;
     document.querySelectorAll('#chartTypeTabLineAdvanced .nav-link, #chartTypeTabBarAdvanced .nav-link').forEach(btn => btn.classList.remove('active'));
     if (type === 'line') document.getElementById('btn-type-line-adv').classList.add('active');
     if (type === 'line-assist') document.getElementById('btn-type-line-assist-adv').classList.add('active');

@@ -12,7 +12,31 @@ async function updateChart() {
 
     // 1. 期間（日・月・年）に応じたデータ事前フィルタリング
     if (currentPeriod === 'day') {
-        records = records.slice(-30); // 日別は最新の30セットに絞る
+        // =============================================================
+        // 🟢 既存の id インデックスを使い、最新（逆順）からスキャンする
+        // =============================================================
+        let fetchedRecords = [];
+        let uniqueDates = new Set();
+
+        // db.records の後ろ（最新のID）から逆順に1件ずつチェック
+        await db.records
+            .reverse() // 👈 これが「idインデックスを使って逆順にめくる」という指示になります
+            .until(record => {
+                // 選択された種目（exercise）のデータだけを拾う
+                if (record.exercise === exercise) {
+                    uniqueDates.add(record.date);
+                    
+                    // 7つの異なる日付を超えたら、DBのスキャンをその場で「即座に終了」する
+                    if (uniqueDates.size > 7) return true; 
+                    
+                    fetchedRecords.push(record);
+                }
+                return false;
+            })
+            .each(() => {}); // untilを起動するための空実行
+
+        // チャートの描画（日付の古い順＝左から右）に合わせるため、配列を元に戻す
+        records = fetchedRecords.reverse();
     } else if (currentPeriod === 'month') {
         // プルダウン要素を取得
         const yearSelect = document.getElementById('year-select');
